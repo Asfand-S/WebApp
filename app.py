@@ -14,13 +14,15 @@ def index():
         if file.filename == '':
             return "No selected file", 400
         
+        if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+            return "Uploaded file is not an Excel file", 400
+        
         # Read Excel file
         df = pd.read_excel(file)
         
         # Generate PDF
-        pdf_output = generate_pdf(df, "outputs")
+        zip_output = generate_pdfs_zip(df)
 
-        return send_file(pdf_output, as_attachment=True, download_name='output.pdf', mimetype='application/pdf')
+        return send_file(zip_output, as_attachment=True, download_name='PDFs_compressed.zip', mimetype='application/zip')
     
     return render_template('index.html')
-
