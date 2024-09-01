@@ -26,3 +26,4 @@ def index():
         return send_file(zip_output, as_attachment=True, download_name='PDFs_compressed.zip', mimetype='application/zip')
     
     return render_template('index.html')
+
