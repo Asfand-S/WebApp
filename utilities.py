@@ -1,4 +1,5 @@
 import io
+import zipfile
 from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -70,7 +71,7 @@ def on_later_pages(canvas, doc):
     canvas.drawString(7.4*cm, 0.7*cm, "www.emploicesu.fr")
 
 # Function to create a PDF for each row
-def create_pdf(row, index, save_folder):
+def create_pdf(row, index, bytes):
     try:
         step = 1
         items = ["Prénom", "Nom", "Numéro de téléphone", "Quel âge avez-vous ? ", "Ville", "Code postal", "Nationalité ", "Permis B+ véhicule", 
@@ -152,33 +153,28 @@ def create_pdf(row, index, save_folder):
         cv_link = str(row["Téléchargez votre CV en ligne en vérifiant que vos informations soient bien à jour "])
         photo_link = str(row["Ajoutez une Photo d'identité ou photo autre professionnelle"])
 
-        output = io.BytesIO()
-        doc = SimpleDocTemplate(output, pagesize=A4,
+        doc = SimpleDocTemplate(bytes, pagesize=A4,
                                 leftMargin=1.5*cm, rightMargin=1.5*cm,
                                 topMargin=1.5*cm, bottomMargin=1.5*cm)
 
         doc.build(elements, onFirstPage=lambda canvas, doc: add_yellow_border(canvas, doc, photo_link, cv_link), onLaterPages=on_later_pages)
-        output.seek(0)
-        return output
+        bytes.seek(0)
+        return bytes
     except Exception as e:
         return (index, e, step)
 
-def generate_pdf(df, save_folder):
-    if save_folder:
-        df.fillna("", inplace=True)
+def generate_pdfs_zip(df):
+    df.fillna("", inplace=True)
+    # Create a BytesIO object to hold the zip file in memory
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         # Generate a PDF for each row
-        results = []
         for index, row in df.iterrows():
-            # if index == 25:
-            #     create_pdf(row, index)
-            #     break
-            result = create_pdf(row, index, save_folder)
-            return result
-            if result != True:
-                results.append(result)
-
-        if results:
-            print(f'Total Files: {index+1}\nFailed files: {len(results)}\nFailed at rows: {", ".join([str(r[0]) for r in results])}')
-        else:
-            print(f'File successfully saved to {save_folder}')
-
+            pdf_buffer = io.BytesIO()
+            create_pdf(row, index, pdf_buffer)
+            pdf_filename = f"output_row_{index + 1}.pdf"
+            zip_file.writestr(pdf_filename, pdf_buffer.getvalue())
+    
+    zip_buffer.seek(0)
+    return zip_buffer
