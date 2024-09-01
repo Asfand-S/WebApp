@@ -4,15 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Excel to PDF Converter</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .upload-button, .convert-button {
+            margin: 30px 0;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007ADE;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+        .filename-label {
+            display: block;
+            margin: 20px 0;
+            font-size: 14px;
+            color: black;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-button:hover, .convert-button:hover {
+            background-color: #0099FF;  /* Darker shade for hover effect */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Upload Excel File</h1>
-        <form method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".xlsx,.xls">
-            <button type="submit">Convert to PDF</button>
+        <h1>Excel to PDF Converter</h1>
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            <label class="upload-button" for="file-input">Upload Excel File</label>
+            <input type="file" name="file" id="file-input" accept=".xlsx,.xls" onchange="displayFilename(this)">
+            <span class="filename-label" id="filename-label">No file selected</span>
+            <button type="submit" class="convert-button">Convert to PDF</button>
         </form>
     </div>
+
+    <script>
+        function displayFilename(input) {
+            const label = document.getElementById('filename-label');
+            const fileName = input.files[0] ? input.files[0].name : 'No file selected';
+            label.textContent = fileName;
+        }
+    </script>
 </body>
 </html>
